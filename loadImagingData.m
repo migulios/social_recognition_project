@@ -1,14 +1,16 @@
+%# Function to load the images of the brain activity
 
 function imData=loadImagingData(binSize)
 
+%# Load tif files
 fileNames = {'f1(00002).tif','f1(00003).tif','f1(00004).tif','f1(00005).tif'}; %,...
-
 
 nFiles=length(fileNames);
 tiffInfo = imfinfo(fileNames{1});
 
 testFrame=imread(fileNames{1},'Index',1,'Info',tiffInfo);
 
+%# Crop the region of interest
 figure;
 imagesc(testFrame);
 corners=ginput(2);
@@ -33,7 +35,8 @@ nBins=nWidthBins*nHeightBins;
 
 for k=1:nFiles
     tiffInfo = imfinfo(fileNames{k});
-    no_frame(k) = numel(tiffInfo);    %# Get the number of images in the file
+    %# Get the number of images in the file
+    no_frame(k) = numel(tiffInfo);    
 end
 
 totFrames=sum(no_frame);
@@ -42,8 +45,10 @@ binCell=zeros(nWidthBins,nHeightBins,totFrames);
 
 for k=1:nFiles
     tiffInfo = imfinfo(fileNames{k});
-    no_frame(k) = numel(tiffInfo);    %# Get the number of images in the file
-    matrix_video = uint16(zeros(new_height,new_width,no_frame(k)));      %# Preallocate the movie
+    %# Get the number of images in the file
+    no_frame(k) = numel(tiffInfo); 
+    %# Preallocate the movie
+    matrix_video = uint16(zeros(new_height,new_width,no_frame(k))); 
     
     for iFrame = 1:no_frame(k)
         tempFrame=imread(fileNames{k},'Index',iFrame,'Info',tiffInfo);
@@ -75,20 +80,25 @@ figure;
 imagesc(binNumber)
 colormap(jet(128))
 
-imagingFR = 30.30; %Frames per secons
+imagingFR = 30.30; %Frames per second
 imagingDT= 1/imagingFR;
-tau1 = 10;%ceil(200/no_frame); %smoothing window (how many points to smooth)
-tau2 = 100;%ceil(1200/no_frame); %window to calculate F0
+%smoothing window (how many points to smooth)
+tau1 = 10;%ceil(200/no_frame);
+%window to calculate F0
+tau2 = 100;%ceil(1200/no_frame); 
 
 for file_counter = 1:size(binMovieMatrix,1)
-    avg_mat = tsmovavg(binMovieMatrix(file_counter,:),'s',tau1,2); %this smooths raw trace by 'tau1' window
+%this smooths raw trace by 'tau1' window
+    avg_mat = tsmovavg(binMovieMatrix(file_counter,:),'s',tau1,2); 
     
     for t = (tau2+1):size(binMovieMatrix,2)
-        roi_fzero(file_counter,t) = min(avg_mat(abs(t-tau2):t)); %takes the min (==F0) of window 'tau2' for timepoint 't'
+    %takes the min (==F0) of window 'tau2' for timepoint 't'
+        roi_fzero(file_counter,t) = min(avg_mat(abs(t-tau2):t)); 
     end
 end
 
-dF_DATA = (binMovieMatrix-roi_fzero)./roi_fzero; %this calculates DF/F
+%this calculates DF/F
+dF_DATA = (binMovieMatrix-roi_fzero)./roi_fzero; 
 dF_DATA = dF_DATA(:,(tau2+1):end);
 
 imagingTimeVector=0:imagingDT:(totFrames*imagingDT);
