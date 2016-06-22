@@ -1,8 +1,9 @@
-
+%Function to plot the heat maps once we have the clusters 
 
 function calcHeatMap(trackData,imData,clusterNum,sig,dtRes)
 
-
+%to aling the time vectors
+%Big time contains a vector with all the time points in both tracking vector and imaging data vector
 bigTime=[trackData.trackingTimeVector;imData.imagingTimeVector'];
 
 [bigTime, sortInd]=sort(bigTime);
@@ -18,6 +19,7 @@ bigCluster=bigCluster(sortInd);
 
 firstGoodTrack=find(not(isnan(bigFishX)),1,'first');
 
+%to interpolate both tracking and imaging
 bigCluster=naninterp(bigCluster(firstGoodTrack:end));
 bigFishX=naninterp(bigFishX(firstGoodTrack:end));
 bigFishY=naninterp(bigFishY(firstGoodTrack:end));
@@ -45,6 +47,7 @@ y=50:800;
 
 [X,Y]=meshgrid(x,y);
 
+%Mini gaussians in each position related with the activity in the cluster 
 heatMap=zeros(size(X));
 lastTime=-dtRes;
 for i=seqtQL:thirdQL
